@@ -40,12 +40,28 @@ def unigram(word, table):
         print "This word doesn't exist in the corpus."
 
 
+# return Laplace smoothed unigram probability
+def smoothedUnigram(word, table):
+    try:
+        return float(table.loc[word, 'SUM']+1)/float(table['SUM'].sum()+len(table.columns))
+    except KeyError:
+        print "This word doesn't exist in the corpus."
+
+
 # return the bigram P(word2|word1) for the given table of counts
 def bigram(word1, word2, table):
     try:
         return float(table.loc[word1, word2])/float(unigram(word1, table))
     except KeyError:
         print "Either word1 or word2 doesn't exist in the corpus"
+
+
+# return Laplace smoothed bigram probability
+def smoothedBigram(word1, word2, table):
+    try:
+        return float(table.loc[word1, word2]+1)/float(unigram(word1, table)+len(table.columns))
+    except KeyError:
+        print "Either word1 or word2 doesn't exist in the corpus."
 
 
 # create sum list
@@ -96,6 +112,11 @@ def bigram_sentence_generator(counts):
             token = token_list[rd_idx]  # get corresponding token
         sentence += ' ' + token
     return sentence.split('</s>')[0].strip()
+
+
+# returns perplexity using unigram model
+def perplexity(word, table):
+    math.exp( (1/(len(table.columns)*len(table.rows)))*table.sum(-log(unigram(word, table))) )
 
 
 
