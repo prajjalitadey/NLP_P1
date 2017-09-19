@@ -10,6 +10,9 @@ def store_counts(filename):
     lines = text_file.readlines()
     types = defaultdict(lambda: defaultdict(int))
 
+    #instantiate seen word set
+    seen = set()
+
     for line in lines:
         #Standardize the contractions ('t is a separate word)
         tokens = line.replace(" n't", "n 't")
@@ -22,6 +25,16 @@ def store_counts(filename):
             # treat upper and lower case words the same
             word1 = tokens[i].lower()
             word2 = tokens[i+1].lower()
+
+            #if words NOT in set, add to set, and change current word to <unk>
+            if(not(word1 in seen)):
+                seen.add(word1)
+                word1 = "<unk>"
+            
+            if(not(word2 in seen)):
+                seen.add(word2)
+                word2 = "<unk>"
+
             types[word1][word2] += 1
 
     # convert dictionary to table
