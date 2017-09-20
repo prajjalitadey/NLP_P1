@@ -138,7 +138,7 @@ def uniPerplexity(trainTable, testTable):
         currentword = testWords[i]
         wordProb = wordProb - math.log(smoothedUnigram(currentword, trainTable))
 
-    return (math.exp(wordProb/len(testWords))
+    return (math.exp(wordProb/len(testWords)))
 
 
 
