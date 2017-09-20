@@ -142,6 +142,9 @@ def uniPerplexity(trainTable, testTable):
 
 
 
+
+
+
 def sentiment_classification(corpus):
     text_file = open(corpus, 'r')
     lines = text_file.readlines()
@@ -151,8 +154,8 @@ def sentiment_classification(corpus):
     final_array = []
     # pos = 1; neg = 0
     for line in lines:
-        pos_perplexity = perplexity(pos_counts, line)
-        neg_perplexity = perplexity(neg_counts, line)
+        pos_perplexity = uniPerplexity(pos_counts, line)
+        neg_perplexity = uniPerplexity(neg_counts, line)
         final_array.append(bool(pos_perplexity < neg_perplexity))
     return final_array
 
