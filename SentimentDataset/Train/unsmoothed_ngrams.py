@@ -56,6 +56,8 @@ def unigram(word, table):
 # return Laplace smoothed unigram probability
 def smoothedUnigram(word, table):
     try:
+        if word not in list(table.columns.values):
+            word = '<unk>'
         return float(table.loc[word, 'SUM']+1)/float(table['SUM'].sum()+len(table.columns))
     except KeyError:
         print "This word doesn't exist in the corpus."
@@ -128,16 +130,15 @@ def bigram_sentence_generator(counts):
 
 
 # returns perplexity using unigram model
-# returns perplexity using unigram model
 def uniPerplexity(trainTable, testTable):
-    wordProb = 1
+    wordProb = 0
     testWords = sumList(testTable)
 
     for i in range(0, len(testWords)):
         currentword = testWords[i]
-        wordProb = wordProb * smoothedUnigram(trainTable, currentword)
+        wordProb = wordProb - math.log(smoothedUnigram(currentword, trainTable))
 
-    return (1/wordProb)^(1/len(testWords))
+    return (math.exp(wordProb/len(testWords))
 
 
 
