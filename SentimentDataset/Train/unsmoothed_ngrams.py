@@ -9,15 +9,11 @@ def store_counts(filename):
     text_file = open(filename, 'r')
     lines = text_file.readlines()
     types = defaultdict(lambda: defaultdict(int))
-
-    #instantiate seen word set
-    seen = set()
+    seen = set()  # instantiate seen word set
 
     for line in lines:
-        #Standardize the contractions ('t is a separate word)
-        tokens = line.replace(" n't", "n 't")
-        #Get rid of hyphens
-        tokens = line.replace('-', ' ')
+        tokens = line.replace(" n't", "n 't")  # Standardize the contractions ('t is a separate word)
+        tokens = line.replace('-', ' ')  # Get rid of hyphens
         tokens = ['<s>'] + line.split() + ['</s>']
 
         count = len(tokens)
@@ -38,10 +34,11 @@ def store_counts(filename):
             types[word1][word2] += 1
 
     # convert dictionary to table
-    table = pd.DataFrame(types).T.fillna(0).applymap(lambda x: int(x))
+    table = pd.DataFrame(types).T
     # add totals
     table['SUM'] = table.sum(axis=1)
     table.loc['</s>', 'SUM'] = int(table.loc['<s>', 'SUM'])
+    table = table.fillna(0).applymap(lambda x: int(x))
     return table
 
 
@@ -147,13 +144,14 @@ def uniPerplexity(trainTable, testTable):
     return (math.exp(wordProb/len(testWords)))
 
 
-
 # returns perplexity using bigram model
-def biPerplexity(trainTable, filename):
-    text_file = open(filename, 'r')
-    lines = text_file.readlines()
-    types = defaultdict(lambda: defaultdict(int))
-
+def biPerplexity(trainTable, filename=None, line=None):
+    if filename:
+        text_file = open(filename, 'r')
+        lines = text_file.readlines()
+    if line:
+        lines = line
+    total_tokens = 0
     wordProb = 0
 
     for line in lines:
@@ -164,6 +162,7 @@ def biPerplexity(trainTable, filename):
         tokens = ['<s>'] + line.split() + ['</s>']
 
         count = len(tokens)
+        total_tokens += count
         sentenceProb = 0
         for i in range(count-1):
             # treat upper and lower case words the same
@@ -172,22 +171,59 @@ def biPerplexity(trainTable, filename):
             sentenceProb = sentenceProb + math.log(smoothedBigram(word1, word2, trainTable))
         wordProb = wordProb - sentenceProb
 
-    return (math.exp(wordProb/trainTable['SUM'].sum()))
+    return (math.exp(wordProb/total_tokens))
 
 
-def sentiment_classification(corpus):
+def uni_sentiment_classifier(pos_table, neg_table, corpus):
     text_file = open(corpus, 'r')
-    lines = text_file.readlines()
-
-    pos_counts = store_counts('pos.txt')
-    neg_counts = store_counts('neg.txt')
+    lines = text_file.readlines()  
     final_array = []
-    # pos = 1; neg = 0
+
+    pos_tokens = pos_table['SUM'].sum()
+    neg_tokens = neg_table['SUM'].sum()
+
     for line in lines:
-        pos_perplexity = uniPerplexity(pos_counts, line)
-        neg_perplexity = uniPerplexity(neg_counts, line)
-        final_array.append(bool(pos_perplexity < neg_perplexity))
+        score = 0
+        words = line.lower().split()
+        for word in words:
+            pos_word_count = pos_table.loc[word, 'SUM'] if word in list(pos_table.index.values) else 0
+            neg_word_count = neg_table.loc[word, 'SUM'] if word in list(neg_table.index.values) else 0
+            score += ( pos_word_count/pos_tokens - neg_word_count/neg_tokens )
+
+        print line
+        print "Score: " + str(score)
+        print "---------------------------------------------------------"
+        
+        final_array.append(int(bool(score/len(words) > 0)))
     return final_array
+
+
+def bi_sentiment_classifier(pos_table, neg_table, corpus):
+    text_file = open(corpus, 'r')
+    lines = text_file.readlines()  
+    final_array = []
+
+    pos_bigrams = pos_table.drop(['SUM'], axis=1).values.sum()
+    neg_bigrams = neg_table.drop(['SUM'], axis=1).values.sum()
+
+    for line in lines:
+        score = 0
+        words = ['<s>'] + line.split() + ['</s>']
+        for i in range(len(words)-1):
+            word1 = words[i]
+            word2 = words[i+1]
+            pos_count = pos_table.loc[word1, word2] if (word1 in list(pos_table.index.values) and word2 in list(pos_table.columns.values)) else 0
+            neg_count = neg_table.loc[word1, word2] if (word1 in list(neg_table.index.values) and word2 in list(neg_table.columns.values)) else 0
+            score += ( pos_count/float(pos_bigrams) - neg_count/float(neg_bigrams) )
+
+        print line
+        print "Score: " + str(score)
+        print "---------------------------------------------------------"
+        final_array.append(int(bool(score/len(words) > 0)))
+
+    return final_array
+
+
 
 
 
