@@ -76,6 +76,10 @@ def bigram(word1, word2, table):
 # return Laplace smoothed bigram probability
 def smoothedBigram(word1, word2, table):
     try:
+        if word1 not in list(table.columns.values):
+            word1 = '<unk>'
+        if word2 not in list(table.columns.values):
+            word2 = '<unk>'
         return float(table.loc[word1, word2]+1)/float(unigram(word1, table)+len(table.columns))
     except KeyError:
         print "Either word1 or word2 doesn't exist in the corpus."
@@ -169,10 +173,6 @@ def biPerplexity(trainTable, filename):
         wordProb = wordProb - sentenceProb
 
     return (math.exp(wordProb/trainTable['SUM'].sum()))
-
-
-
-
 
 
 def sentiment_classification(corpus):
