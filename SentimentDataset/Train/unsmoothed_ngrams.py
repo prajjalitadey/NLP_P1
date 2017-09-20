@@ -128,7 +128,6 @@ def bigram_sentence_generator(counts):
 
 
 # returns perplexity using unigram model
-# returns perplexity using unigram model
 def uniPerplexity(trainTable, testTable):
     wordProb = 1
     testWords = sumList(testTable)
@@ -138,6 +137,37 @@ def uniPerplexity(trainTable, testTable):
         wordProb = wordProb * smoothedUnigram(trainTable, currentword)
 
     return (1/wordProb)^(1/len(testWords))
+
+# returns perplexity using bigram model
+def biPerplexity(trainTable, filename):
+    text_file = open(filename, 'r')
+    lines = text_file.readlines()
+    types = defaultdict(lambda: defaultdict(int))
+
+
+    wordProb = 0
+
+    for line in lines:
+        #Standardize the contractions ('t is a separate word)
+        tokens = line.replace(" n't", "n 't")
+        #Get rid of hyphens
+        tokens = line.replace('-', ' ')
+        tokens = ['<s>'] + line.split() + ['</s>']
+
+        count = len(tokens)
+
+        sentenceProb = 0
+
+        for i in range(count-1):
+            # treat upper and lower case words the same
+            word1 = tokens[i].lower()
+            word2 = tokens[i+1].lower()
+
+            sentenceProb = sentenceProb + math.log(smoothedBigram(word1, word2, trainTable))
+
+        wordProb = wordProb - sentenceProb
+
+    return (math.exp(wordProb/trainTable['SUM'].sum()))
 
 
 
@@ -154,9 +184,6 @@ def sentiment_classification(corpus):
         neg_perplexity = perplexity(neg_counts, line)
         final_array.append(bool(pos_perplexity < neg_perplexity))
     return final_array
-
-
-
 
 
 
