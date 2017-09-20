@@ -66,6 +66,8 @@ def smoothedUnigram(word, table):
 # return the bigram P(word2|word1) for the given table of counts
 def bigram(word1, word2, table):
     try:
+        if word not in list(table.columns.values):
+            word = '<unk>'
         return float(table.loc[word1, word2])/float(unigram(word1, table))
     except KeyError:
         print "Either word1 or word2 doesn't exist in the corpus"
@@ -140,12 +142,13 @@ def uniPerplexity(trainTable, testTable):
 
     return (math.exp(wordProb/len(testWords)))
 
+
+
 # returns perplexity using bigram model
 def biPerplexity(trainTable, filename):
     text_file = open(filename, 'r')
     lines = text_file.readlines()
     types = defaultdict(lambda: defaultdict(int))
-
 
     wordProb = 0
 
@@ -157,16 +160,12 @@ def biPerplexity(trainTable, filename):
         tokens = ['<s>'] + line.split() + ['</s>']
 
         count = len(tokens)
-
         sentenceProb = 0
-
         for i in range(count-1):
             # treat upper and lower case words the same
             word1 = tokens[i].lower()
             word2 = tokens[i+1].lower()
-
             sentenceProb = sentenceProb + math.log(smoothedBigram(word1, word2, trainTable))
-
         wordProb = wordProb - sentenceProb
 
     return (math.exp(wordProb/trainTable['SUM'].sum()))
