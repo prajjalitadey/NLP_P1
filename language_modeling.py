@@ -2,6 +2,8 @@ from collections import defaultdict
 from pprint import pprint
 import pandas as pd
 from random import randint, randrange
+import time
+from gensim.models.keyedvectors import KeyedVectors
 
 
 # create bigram table
@@ -188,13 +190,9 @@ def uni_sentiment_classifier(pos_table, neg_table, corpus):
         for word in words:
             pos_word_count = pos_table.loc[word, 'SUM'] if word in list(pos_table.index.values) else 0
             neg_word_count = neg_table.loc[word, 'SUM'] if word in list(neg_table.index.values) else 0
-            score += ( pos_word_count/pos_tokens - neg_word_count/neg_tokens )
-
-        print line
-        print "Score: " + str(score)
-        print "---------------------------------------------------------"
-        
+            score += ( pos_word_count/float(pos_tokens) - neg_word_count/float(neg_tokens) )        
         final_array.append(int(bool(score/len(words) > 0)))
+    
     return final_array
 
 
@@ -208,45 +206,61 @@ def bi_sentiment_classifier(pos_table, neg_table, corpus):
 
     for line in lines:
         score = 0
-        words = ['<s>'] + line.split() + ['</s>']
+        words = ['<s>'] + line.lower().split() + ['</s>']
         for i in range(len(words)-1):
             word1 = words[i]
             word2 = words[i+1]
             pos_count = pos_table.loc[word1, word2] if (word1 in list(pos_table.index.values) and word2 in list(pos_table.columns.values)) else 0
             neg_count = neg_table.loc[word1, word2] if (word1 in list(neg_table.index.values) and word2 in list(neg_table.columns.values)) else 0
             score += ( pos_count/float(pos_bigrams) - neg_count/float(neg_bigrams) )
-
-        print line
-        print "Score: " + str(score)
-        print "---------------------------------------------------------"
         final_array.append(int(bool(score/len(words) > 0)))
 
     return final_array
+
+word2vec = KeyedVectors.load_word2vec_format(, binary=False)
+glove = KeyedVectors.load_word2vec_format(, binary=True)
+
+def word_embeddings():
+
 
 
 
 
 
 if __name__== "__main__":
-    pos_counts = store_counts('pos.txt')
-    neg_counts = store_counts('neg.txt')
+    start_time = time.time()
 
-    print "---------------- CALCULATING POSITIVE UNIGRAM GENERATED SENTENCES -------------"
-    for i in range(5):
-        print str(i+1) + '. ' + rsgUnigram(pos_counts)
-    print '\n'
+    pos_counts = store_counts('SentimentDataset/Train/pos.txt')
+    neg_counts = store_counts('SentimentDataset/Train/neg.txt')
 
-    print "---------------- CALCULATING POSITIVE BIGRAM GENERATED SENTENCES -------------"
-    for i in range(5):
-        print str(i+1) + '. ' + bigram_sentence_generator(pos_counts)
-    print '\n'
+    print "---------------- CLASSIFYING SENTIMENT-----------------------"
+    pu = uni_sentiment_classifier(pos_counts, neg_counts, 'SentimentDataset/Dev/pos.txt')
+    nu = uni_sentiment_classifier(pos_counts, neg_counts, 'SentimentDataset/Dev/neg.txt')
+    pb = bi_sentiment_classifier(pos_counts, neg_counts, 'SentimentDataset/Dev/pos.txt')
+    nb = bi_sentiment_classifier(pos_counts, neg_counts, 'SentimentDataset/Dev/neg.txt')
 
-    print "---------------- CALCULATING NEGATIVE UNIGRAM GENERATED SENTENCES -------------"
-    for i in range(5):
-        print str(i+1) + '. ' + rsgUnigram(neg_counts)
-    print '\n'
+    print "----- Evaluating Unigram Sentiment Classifier ------"
+    print "Total (Accurately) Predicted Positive Reviews: " + str(sum(pu))
+    print "Total Positive Reviews: " + str(len(pu))
+    print "Ratio of Accurately Predicted Positive Reviews: " + str( float(sum(pu))/float(len(pu)) )
+    
+    print "\n"
+    print "Total (Accurately) Predicted Negative Reviews: " + str(len(nu) - sum(nu))
+    print "Total Negative Reviews: " + str(len(nu))
+    print "Ratio of Accurately Predicted Negative Reviews: " + str( float(len(nu) - sum(nu))/float(len(nu)) )
+    
+    print "\n"
+    print "----- Evaluating Bigram Sentiment Classifier -------"
+    print "Total (Accurately) Predicted Positive Reviews: " + str(sum(pb))
+    print "Total Positive Reviews: " + str(len(pb))
+    print "Ratio of Accurately Predicted Positive Reviews: " + str( float(sum(pb))/float(len(pb)) )
+    
+    print "\n"
+    print "Total (Accurately) Predicted Negative Reviews: " + str(len(nb) - sum(nb))
+    print "Total Negative Reviews: " + str(len(nb))
+    print "Ratio of Accurately Predicted Negative Reviews: " + str( float(len(nb) - sum(nb))/float(len(nb)) )
 
-    print "---------------- CALCULATING NEGATIVE BIGRAM GENERATED SENTENCES -------------"
-    for i in range(5):
-        print str(i+1) + '. ' + bigram_sentence_generator(neg_counts)
-    print '\n'
+    print "\n"
+    print "Time: " + str(round(time.time()-start_time, 2)) + " seconds"
+
+
