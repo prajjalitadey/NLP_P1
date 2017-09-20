@@ -128,7 +128,16 @@ def bigram_sentence_generator(counts):
 
 
 # returns perplexity using unigram model
-# def perplexity(table, corpus):
+# returns perplexity using unigram model
+def uniPerplexity(trainTable, testTable):
+    wordProb = 1
+    testWords = sumList(testTable)
+
+    for i in range(0, len(testWords)):
+        currentword = testWords[i]
+        wordProb = wordProb * smoothedUnigram(trainTable, currentword)
+
+    return (1/wordProb)^(1/len(testWords))
 
 
 
