@@ -128,8 +128,25 @@ def bigram_sentence_generator(counts):
 
 
 # returns perplexity using unigram model
-def perplexity(word, table):
-    math.exp( (1/(len(table.columns)*len(table.rows)))*table.sum(-log(unigram(word, table))) )
+# def perplexity(table, corpus):
+
+
+
+def sentiment_classification(corpus):
+    text_file = open(corpus, 'r')
+    lines = text_file.readlines()
+
+    pos_counts = store_counts('pos.txt')
+    neg_counts = store_counts('neg.txt')
+    final_array = []
+    # pos = 1; neg = 0
+    for line in lines:
+        pos_perplexity = perplexity(pos_counts, line)
+        neg_perplexity = perplexity(neg_counts, line)
+        final_array.append(bool(pos_perplexity < neg_perplexity))
+    return final_array
+
+
 
 
 
