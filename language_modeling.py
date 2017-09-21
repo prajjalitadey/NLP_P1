@@ -225,7 +225,7 @@ def bi_sentiment_classifier(pos_table, neg_table, corpus):
 
     return final_array
 
-
+# Predict the last word
 def word_embeddings(filename, model):
     text_file = open(filename, 'r')
     lines = text_file.readlines() 
@@ -242,6 +242,53 @@ def word_embeddings(filename, model):
             pred = None
         predictions.append(pred)
     return np.array(correct), np.array(predictions)
+
+# Predict the first word
+def first_word(filename, model):
+    text_file = open(filename, "r")
+    lines = text_file.readlines()
+    correct = []
+    predictions = []
+    for line in lines:
+        words = line.strip().split()
+        pos = words[2:4]
+        neg = words[1:]
+        correct.append(words[2:4])
+        try:
+            pred = model.most_similar(positive=pos, negative=neg, topn=1)[0][0]
+        except:
+            pred = None
+        predictions.append(pred)
+    return np.array(correct), np.array(predictions)
+
+def cosine_metric(word, filename, model):
+    text_file = open(filename, "r")
+    lines = text_file.readlines()
+    sim = []
+    for line in lines:
+        w = line.strip().split()
+        i = 0
+        for i in len(w):
+            similar = model.wv.similarity(word, w)
+            sim.append(similar)
+    sim = mergeSort(sim)
+    return sim[:10]
+
+def mergeSort(array):
+    if (len(array)/2 == 0) return array
+    if (len(array)/2 == 0):
+        if (array[0] < array[1]):
+            temp = array[0]
+            array[0] = array[1]
+            array[1] = temp
+
+    mid = len(array)/2
+    left = array(mid:)
+    right = array(:mid)
+    mergeSort(left)
+    mergeSort(right)
+
+
 
 
 
@@ -282,5 +329,8 @@ if __name__== "__main__":
 
     print "\n"
     print "Time: " + str(round(time.time()-start_time, 2)) + " seconds"
+
+    print *****************************************************************************************
+    print mergeSort([3,1,2])
 
 
