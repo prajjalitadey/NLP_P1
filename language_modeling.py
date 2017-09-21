@@ -233,10 +233,10 @@ def word_embeddings(filename, model):
         pos = words[1:3]
         neg = words[:1]
         correct.append(words[3])
-        try:
-            pred = model.most_similar(positive=pos, negative=neg, topn=1)[0][0]
-        except:
-            pred = None
+        # try:
+        pred = model.most_similar(positive=pos, negative=neg, topn=1)[0][0]
+        # except:
+        #     pred = None
         predictions.append(pred)
     return np.array(correct), np.array(predictions)
 
