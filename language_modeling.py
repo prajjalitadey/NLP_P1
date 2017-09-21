@@ -61,6 +61,14 @@ def smoothedUnigram(word, table):
     except KeyError:
         print "This word doesn't exist in the corpus."
 
+def KneserNeyUnigram(word, table):
+    try:
+        if word not in list(table.columns.values):
+            word = "<unk>"
+        return 
+    except KeyError:
+        print "This word does not exist in the corpus"
+
 
 # return the bigram P(word2|word1) for the given table of counts
 def bigram(word1, word2, table):
@@ -220,7 +228,6 @@ def bi_sentiment_classifier(pos_table, neg_table, corpus):
 word2vec = KeyedVectors.load_word2vec_format(, binary=False)
 glove = KeyedVectors.load_word2vec_format(, binary=True)
 
-def word_embeddings():
 
 
 
