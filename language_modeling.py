@@ -1,6 +1,7 @@
 from collections import defaultdict
 from pprint import pprint
 import pandas as pd
+import numpy as np
 from random import randint, randrange
 import time
 from gensim.models.keyedvectors import KeyedVectors
@@ -181,7 +182,7 @@ def uni_sentiment_classifier(pos_table, neg_table, corpus):
     lines = text_file.readlines()  
     final_array = []
 
-    pos_tokens = pos_table['SUM'].sum()
+    pos_tokens = pos_table['SUM'].sum()  # sums all the values in the 'SUM' column i.e. total # of unigrams
     neg_tokens = neg_table['SUM'].sum()
 
     for line in lines:
@@ -198,10 +199,10 @@ def uni_sentiment_classifier(pos_table, neg_table, corpus):
 
 def bi_sentiment_classifier(pos_table, neg_table, corpus):
     text_file = open(corpus, 'r')
-    lines = text_file.readlines()  
+    lines = text_file.readlines()
     final_array = []
 
-    pos_bigrams = pos_table.drop(['SUM'], axis=1).values.sum()
+    pos_bigrams = pos_table.drop(['SUM'], axis=1).values.sum()  #excludes the 'SUM' column, and then sums all the values i.e. total # of bigrams
     neg_bigrams = neg_table.drop(['SUM'], axis=1).values.sum()
 
     for line in lines:
@@ -217,17 +218,33 @@ def bi_sentiment_classifier(pos_table, neg_table, corpus):
 
     return final_array
 
-word2vec = KeyedVectors.load_word2vec_format(, binary=False)
-glove = KeyedVectors.load_word2vec_format(, binary=True)
+# word2vec = KeyedVectors.load_word2vec_format('word_vectors/GoogleNews-vectors-negative300.bin', binary=True)  # this works
+# run this in terminal first: python -m gensim.scripts.glove2word2vec --input glove.840B.300d.txt --output glove.840B.300d.w2vformat.txt
+# glove = KeyedVectors.load_word2vec_format('word_vectors/glove.840B.300d.w2vformat.txt', binary=False)
 
-def word_embeddings():
+def word_embeddings(filename, model):
+    text_file = open('analogy_test.txt', 'r')
+    lines = text_file.readlines()
+    correct = []
+    predictions = []
 
-
+    for line in lines:
+        words = line.strip().split()
+        pos = words[1:3]
+        neg = words[:1]
+        correct.append(words[3])
+        try:
+            pred = model.most_similar(positive=pos, negative=neg, topn=1)[0][0]
+        except:
+            pred = None
+        predictions.append(pred)
+    return np.array(correct), np.array(predictions)
 
 
 
 
 if __name__== "__main__":
+    # print out results from sentiment classifier
     start_time = time.time()
 
     pos_counts = store_counts('SentimentDataset/Train/pos.txt')
