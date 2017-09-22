@@ -4,6 +4,7 @@ import pandas as pd
 from random import randint, randrange
 import time
 from gensim.models.keyedvectors import KeyedVectors
+import numpy as np
 
 
 # create bigram table
@@ -243,24 +244,6 @@ def word_embeddings(filename, model):
         predictions.append(pred)
     return np.array(correct), np.array(predictions)
 
-# Predict the first word
-def first_word(filename, model):
-    text_file = open(filename, "r")
-    lines = text_file.readlines()
-    correct = []
-    predictions = []
-    for line in lines:
-        words = line.strip().split()
-        pos = words[2:4]
-        neg = words[1:]
-        correct.append(words[2:4])
-        try:
-            pred = model.most_similar(positive=pos, negative=neg, topn=1)[0][0]
-        except:
-            pred = None
-        predictions.append(pred)
-    return np.array(correct), np.array(predictions)
-
 def cosine_metric(word, filename, model):
     text_file = open(filename, "r")
     lines = text_file.readlines()
@@ -271,27 +254,34 @@ def cosine_metric(word, filename, model):
         for i in len(w):
             similar = model.wv.similarity(word, w)
             sim.append(similar)
-    sim = mergeSort(sim)
+    sim = Quicksort(sim)
     return sim[:10]
 
-def mergeSort(array):
-    if (len(array)/2 == 0) return array
-    if (len(array)/2 == 0):
-        if (array[0] < array[1]):
-            temp = array[0]
-            array[0] = array[1]
-            array[1] = temp
+def Quicksort(array, low, high):
+    if (len(array)<=1):
+        return array
+    low = array[0]
+    high = array[len(array)-1]
+    if low > high:
+        p = partition(array, low, high)
+    Quicksort(array, high, p+1)
+    Quicksort(array, p-1, low)
 
-    mid = len(array)/2
-    left = array(mid:)
-    right = array(:mid)
-    mergeSort(left)
-    mergeSort(right)
-
-
-
-
-
+    
+def partition(array):
+    pivot = array[high]
+    i = low-1
+    j = low
+    while (j <= high-1):
+        if (array[j] <= pivot)
+        i+=1
+        temp = array[i]
+        array[i] = array[j]
+        array[j] = temp
+    temp = array[i+1]
+    array[i+1] = array[high]
+    array[high] = temp
+    return i+1
 
 
 if __name__== "__main__":
@@ -330,7 +320,7 @@ if __name__== "__main__":
     print "\n"
     print "Time: " + str(round(time.time()-start_time, 2)) + " seconds"
 
-    print *****************************************************************************************
-    print mergeSort([3,1,2])
+    #print *****************************************************************************************
+
 
 
