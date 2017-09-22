@@ -5,6 +5,7 @@ from random import randint, randrange
 import time
 from gensim.models.keyedvectors import KeyedVectors
 import numpy as np
+import math
 
 
 # create bigram table
@@ -254,6 +255,7 @@ def cosine_metric(word, filename, model):
         for i in len(w):
             similar = model.wv.similarity(word, w)
             sim.append(similar)
+            i+=1
     sim = Quicksort(sim)
     return sim[:10]
 
@@ -273,11 +275,11 @@ def partition(array):
     i = low-1
     j = low
     while (j <= high-1):
-        if (array[j] <= pivot)
-        i+=1
-        temp = array[i]
-        array[i] = array[j]
-        array[j] = temp
+        if (array[j] <= pivot):
+            i = i+1
+            temp = array[i]
+            array[i] = array[j]
+            array[j] = temp
     temp = array[i+1]
     array[i+1] = array[high]
     array[high] = temp
@@ -289,12 +291,27 @@ if __name__== "__main__":
 
     pos_counts = store_counts('SentimentDataset/Train/pos.txt')
     neg_counts = store_counts('SentimentDataset/Train/neg.txt')
+    dev_ng = store_counts('SentimentDataset/Dev/neg.txt')
+    dev_ps = store_counts('SentimentDataset/Dev/pos.txt')
+
+    p= uniPerplexity(pos_counts, dev_ps)
+    n= uniPerplexity(neg_counts, dev_ng)
+    p2 = biPerplexity(dev_ps, 'SentimentDataset/Dev/pos.txt')
+    n2 = biPerplexity(dev_ng, 'SentimentDataset/Dev/neg.txt')
+    print "...............Perplexity Under Unigram Model................"
+    print "Perplexity for positive dataset: " + str(p)
+    print "Perplexity for negitive dataset: " + str(n)
+
+    print "................Perplexity Under Bigram Model..................."
+    print "Perplexity for positive dataset: " + str(p2)
+    print "Perplexity for negitive dataset: " + str(n2)
+
 
     print "---------------- CLASSIFYING SENTIMENT-----------------------"
     pu = uni_sentiment_classifier(pos_counts, neg_counts, 'SentimentDataset/Dev/pos.txt')
     nu = uni_sentiment_classifier(pos_counts, neg_counts, 'SentimentDataset/Dev/neg.txt')
-    pb = bi_sentiment_classifier(pos_counts, neg_counts, 'SentimentDataset/Dev/pos.txt')
-    nb = bi_sentiment_classifier(pos_counts, neg_counts, 'SentimentDataset/Dev/neg.txt')
+    pb = bi_sentiment_classifier(pos_counts, neg_counts, 'SentimentDataset/Test/test.txt')
+    nb = bi_sentiment_classifier(pos_counts, neg_counts, 'SentimentDataset/Test/test.txt')
 
     print "----- Evaluating Unigram Sentiment Classifier ------"
     print "Total (Accurately) Predicted Positive Reviews: " + str(sum(pu))
@@ -320,7 +337,6 @@ if __name__== "__main__":
     print "\n"
     print "Time: " + str(round(time.time()-start_time, 2)) + " seconds"
 
-    #print *****************************************************************************************
 
 
 
